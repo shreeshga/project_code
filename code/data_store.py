@@ -7,11 +7,12 @@ Converts tiffs, jpgs, etc. to RGB values and save in file called data for proces
 
 import os
 import random
+import struct
 from PIL import Image
 
 size = (92, 112)
 data_dir = '../data/att_faces/'
-data_set_class_count = 40
+data_class_count = 2
 
 def convert_image_to_seq(im):
     seq = []
@@ -28,23 +29,29 @@ def load_data_hollywood():
 
     test_set_class_size = 1
     valid_set_class_size = 2;
+    label_index = 0
     for f in os.listdir(data_dir):
         d = data_dir + f;
         a = test_set_class_size
         b = valid_set_class_size
         if os.path.isdir(d):
             for imgf in os.listdir(d):
-                im = Image.open(d + '/' + imgf)
-                label = int(f[1:]) - 1
-                input_data = (convert_image_to_seq(im), label)
-                if a > 0 :
-                    a -= 1
-                    test_set.append(input_data);
-                elif b > 0:
-                    b -= 1
-                    valid_set.append(input_data);
-                else:
-                    train_set.append(input_data);
+                name, ext = os.path.splitext(imgf)
+                if ext == ".pgm":
+                    im = Image.open(d + '/' + imgf)
+                    label = label_index
+                    input_data = (convert_image_to_seq(im), label)
+                    if a > 0 :
+                        a -= 1
+                        test_set.append(input_data);
+                    elif b > 0:
+                        b -= 1
+                        valid_set.append(input_data);
+                    else:
+                        train_set.append(input_data);
+            label_index += 1
+            if (label_index == data_class_count):
+                break
 
     for data_set in data_sets:
         random.shuffle(data_set)
@@ -56,6 +63,7 @@ def load_data_hollywood():
             x, y = data
             train_x += x
             train_y.append(y)
+        #print train_y
         return (train_x, train_y)
             
     rval = []

@@ -29,6 +29,7 @@ from logistic_sgd import LogisticRegression, load_data
 from mlp import HiddenLayer
 
 import convert_pics
+import data_store
 
 class LeNetConvPoolLayer(object):
     """Pool Layer of a convolutional network """
@@ -136,8 +137,8 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=100, dataset='../data/mnist.pkl.
                            # [int] labels
 
 
-    ishape = (92, 112)     # this is the size of MNIST images
-    output_label_size = 40
+    ishape = data_store.size     # this is the size of dataset
+    output_label_size = data_store.data_class_count
 
     ######################
     # BUILD ACTUAL MODEL #
