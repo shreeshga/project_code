@@ -136,7 +136,8 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=100, dataset='../data/mnist.pkl.
                            # [int] labels
 
 
-    ishape = (128,128)     # this is the size of MNIST images
+    ishape = (92, 112)     # this is the size of MNIST images
+    output_label_size = 40
 
     ######################
     # BUILD ACTUAL MODEL #
@@ -145,23 +146,39 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=100, dataset='../data/mnist.pkl.
 
     # Reshape matrix of rasterized images of shape (batch_size,28*28)
     # to a 4D tensor, compatible with our LeNetConvPoolLayer
-    layer0_input = x.reshape((batch_size,1,128,128))
+    input_shape = (batch_size, 1, ishape[0], ishape[1])
+    layer0_input = x.reshape(input_shape)
+    layer0_filter_shape = (nkerns[0],1,5,5)
+    layer0_pool_shape = (2, 2)
 
     # Construct the first convolutional pooling layer:
     # filtering reduces the image size to (28-5+1,28-5+1)=(24,24)
     # maxpooling reduces this further to (24/2,24/2) = (12,12)
     # 4D output tensor is thus of shape (batch_size,nkerns[0],12,12)
     layer0 = LeNetConvPoolLayer(rng, input=layer0_input,
-            image_shape=(batch_size,1,128,128), 
-            filter_shape=(nkerns[0],1,5,5), poolsize=(2,2))
+            image_shape=input_shape, 
+            filter_shape=layer0_filter_shape, poolsize=layer0_pool_shape)
 
     # Construct the second convolutional pooling layer
     # filtering reduces the image size to (12-5+1,12-5+1)=(8,8)
     # maxpooling reduces this further to (8/2,8/2) = (4,4)
     # 4D output tensor is thus of shape (nkerns[0],nkerns[1],4,4)
+    
+    def eval_filter_pool(inp, fil, pool):
+        return (inp - fil + 1) / pool
+    
+    layer1_input_shape = (
+        batch_size,
+        nkerns[0], 
+        eval_filter_pool(input_shape[2], layer0_filter_shape[2], layer0_pool_shape[0]), 
+        eval_filter_pool(input_shape[3], layer0_filter_shape[3], layer0_pool_shape[1])
+        )
+    
+    layer1_pool_shape = (2, 2)
+    layer1_filter_shape = (nkerns[1],nkerns[0],5,5)
     layer1 = LeNetConvPoolLayer(rng, input=layer0.output,
-            image_shape=(batch_size,nkerns[0],62,62), 
-            filter_shape=(nkerns[1],nkerns[0],5,5), poolsize=(2,2))
+            image_shape=layer1_input_shape, 
+            filter_shape= layer1_filter_shape, poolsize=layer1_pool_shape)
 
     # the TanhLayer being fully-connected, it operates on 2D matrices of
     # shape (batch_size,num_pixels) (i.e matrix of rasterized images).
@@ -169,11 +186,16 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=100, dataset='../data/mnist.pkl.
     layer2_input = layer1.output.flatten(2)
 
     # construct a fully-connected sigmoidal layer
-    layer2 = HiddenLayer(rng, input=layer2_input, n_in=nkerns[1]*29*29, 
-                         n_out=500, activation = T.tanh)
+    layer2 = HiddenLayer(rng, input=layer2_input, 
+                n_in=
+                    nkerns[1]
+                    * eval_filter_pool(layer1_input_shape[2], layer1_filter_shape[2], layer1_pool_shape[0])
+                    * eval_filter_pool(layer1_input_shape[3], layer1_filter_shape[3], layer1_pool_shape[1]), 
+                n_out= 500, 
+                activation = T.tanh)
 
     # classify the values of the fully-connected sigmoidal layer
-    layer3 = LogisticRegression(input=layer2.output, n_in=500, n_out=4)
+    layer3 = LogisticRegression(input=layer2.output, n_in=500, n_out=output_label_size)
 
     # the cost we minimize during training is the NLL of the model
     cost = layer3.negative_log_likelihood(y)

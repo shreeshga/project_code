@@ -41,6 +41,7 @@ import theano
 import theano.tensor as T
 
 import convert_pics
+import data_store
 
 class LogisticRegression(object):
     """Multi-class Logistic Regression Class
@@ -164,16 +165,16 @@ def load_data(dataset):
     '''
     print '... loading data'
 
-    local_data = convert_pics.load_data_hollywood()
+    local_data = data_store.load_data_hollywood()
     
     print '... done converting pics to sequences'
-
+    size = (92, 112)
     mdata = []
     for data in local_data:    
         x,y = data
         x = numpy.asarray(x, dtype= theano.config.floatX)
         y = numpy.asarray(y, dtype='int32')
-        x = x.reshape((y.shape[0], 128*128))
+        x = x.reshape((y.shape[0], size[0] * size[1]))
         mdata.append((x,y))
     local_data = mdata
     

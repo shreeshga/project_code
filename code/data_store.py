@@ -6,6 +6,7 @@ Converts tiffs, jpgs, etc. to RGB values and save in file called data for proces
 
 
 import os
+import random
 from PIL import Image
 
 size = (92, 112)
@@ -20,12 +21,10 @@ def convert_image_to_seq(im):
     return seq
 
 def load_data_hollywood():
-    test_set_x = []
-    test_set_y = []
-    train_set_x = []
-    train_set_y = []
-    valid_set_x = []
-    valid_set_y = []
+    test_set = []
+    train_set = []
+    valid_set = []
+    data_sets = [train_set, valid_set, test_set]
 
     test_set_class_size = 1
     valid_set_class_size = 2;
@@ -37,19 +36,32 @@ def load_data_hollywood():
             for imgf in os.listdir(d):
                 im = Image.open(d + '/' + imgf)
                 label = int(f[1:]) - 1
+                input_data = (convert_image_to_seq(im), label)
                 if a > 0 :
                     a -= 1
-                    test_set_x += convert_image_to_seq(im);
-                    test_set_y.append(label);
+                    test_set.append(input_data);
                 elif b > 0:
                     b -= 1
-                    valid_set_x += convert_image_to_seq(im);
-                    valid_set_y.append(label);
+                    valid_set.append(input_data);
                 else:
-                    train_set_x += convert_image_to_seq(im);
-                    train_set_y.append(label);
+                    train_set.append(input_data);
 
-    rval = [(train_set_x, train_set_y), (valid_set_x,valid_set_y), (test_set_x, test_set_y)]
+    for data_set in data_sets:
+        random.shuffle(data_set)
+        
+    def extract_data_tuples(data_set):
+        train_x = []
+        train_y = []
+        for data in data_set:
+            x, y = data
+            train_x += x
+            train_y.append(y)
+        return (train_x, train_y)
+            
+    rval = []
+    for data_set in data_sets:
+        rval.append(extract_data_tuples(data_set))
+        
     return rval
 
 #if __name__ == '__main__': 
