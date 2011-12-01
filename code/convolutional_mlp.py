@@ -28,8 +28,8 @@ from theano.tensor.nnet import conv
 from logistic_sgd import LogisticRegression, load_data
 from mlp import HiddenLayer
 
-import convert_pics
-import data_store
+import convert_pics as data_store
+#import data_store
 
 class LeNetConvPoolLayer(object):
     """Pool Layer of a convolutional network """

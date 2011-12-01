@@ -13,6 +13,7 @@ from pprint import pprint
 import random
 
 size = (128, 128)
+data_class_count = 4
 # 1 = bp 2 = dr 3 = jd 4 = rr
 dirs = ['brad_pitt', 'daniel_radcliffe', 'johnny_depp', 'ryan_reynolds']
 
@@ -98,7 +99,7 @@ def load_data_hollywood():
                     add_entry_to_dataset(train_set_x, train_set_y, im)
                 i += 1
 
-    print len(train_set_x), len(train_set_y), len(valid_set_x), len(valid_set_y), len(test_set_x), len(test_set_y),
+    #print len(train_set_x), len(train_set_y), len(valid_set_x), len(valid_set_y), len(test_set_x), len(test_set_y),
     rval = [(train_set_x, train_set_y), (valid_set_x,valid_set_y), (test_set_x, test_set_y)]
     return rval
 

@@ -40,8 +40,8 @@ import numpy.lib.shape_base as shape_base
 import theano
 import theano.tensor as T
 
-import convert_pics
-import data_store
+import convert_pics as data_store
+#import data_store
 
 class LogisticRegression(object):
     """Multi-class Logistic Regression Class
@@ -168,7 +168,7 @@ def load_data(dataset):
     local_data = data_store.load_data_hollywood()
     
     print '... done converting pics to sequences'
-    size = (92, 112)
+    size = data_store.size
     mdata = []
     for data in local_data:    
         x,y = data
