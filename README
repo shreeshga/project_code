@@ -1,3 +1,5 @@
-## The code is takem from git clone git://github.com/lisa-lab/DeepLearningTutorials.git
+## The code is adapted from git clone git://github.com/lisa-lab/DeepLearningTutorials.git
 
 ## TODO: Use the CNN code on FERET Face database
+
+## Improve the accuracy

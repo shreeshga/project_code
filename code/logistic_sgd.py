@@ -155,36 +155,29 @@ def load_data(dataset):
 
     # Download the MNIST dataset if it is not present
     data_dir, data_file = os.path.split(dataset)
+    '''
     if (not os.path.isfile(dataset)) and data_file == 'mnist.pkl.gz':
         import urllib
         origin = 'http://www.iro.umontreal.ca/~lisa/deep/data/mnist/mnist.pkl.gz'
         print 'Downloading data from %s' % origin
         urllib.urlretrieve(origin, dataset)
-
+    '''
     print '... loading data'
 
     local_data = convert_pics.load_data_hollywood()
-    #print type(local_data)    
+    
+    print '... done converting pics to sequences'
 
     mdata = []
     for data in local_data:    
         x,y = data
-        x = numpy.asarray(x, dtype='float32')
+        x = numpy.asarray(x, dtype= theano.config.floatX)
         y = numpy.asarray(y, dtype='int32')
-        #print (a)
-        #print (len(b)* 128*128)
-        #print 'X :',x.shape
-        #print 'Y :',y.shape[0] * 128 * 128
-        x = x.reshape((y.shape[0], 64*64))
-        #print a
-        #c = (a,b)
-        #print c
+        x = x.reshape((y.shape[0], 128*128))
         mdata.append((x,y))
     local_data = mdata
     
     lx, ly = local_data[0]
-    #print 'lx :',type(lx)    
-    #print 'ly :',type(ly)    
     train_set_x = lx #T.as_tensor_variable(lx, 'train_set_x', 128)
     train_set_y = ly #T.as_tensor_variable(ly, 'train_set_y', 128)
     lx, ly = local_data[1]
@@ -197,43 +190,9 @@ def load_data(dataset):
 
     test_set = (test_set_x, test_set_y)
     train_set = (train_set_x, train_set_y)
-    #print type(train_set)
-    #print train_set
     valid_set = (valid_set_x, valid_set_y)
     
-#    lx, ly = local_data[0]
-#    test_temp_x = T.fmatrix('test_temp_x')
-#    train_temp_x = T.fmatrix('train_temp_x')
-#    valid_temp_x = T.fmatrix('valid_temp_x')
-#    train_temp_x.reshape((128,128))
-#    valid_temp_x.reshape((128,128)) 
-#    test_temp_x.reshape((128,128))
-#    train_temp_y = T.lvector('train_temp_y')
-#    valid_temp_y = T.lvector('valid_temp_y')
-#    test_temp_y = T.lvector('test_temp_y')
-  #  train_temp_y.reshape(128)
-  #  valid_temp_y.reshape(128)
-  #  test_temp_y.reshape(128)
-
-   # train_set = (numpy.array(train_temp_x, dtype= T.config.floatX),numpy.array(train_temp_y, ndmin=len(ly),dtype='int64'))
-   # lx, ly = local_data[1]
-   # valid_set = (numpy.array(valid_temp_x, dtype= T.config.floatX),numpy.array(valid_temp_y, ndmin=len(ly),dtype='int64'))
-   # lx, ly = local_data[2]
-   # test_set = (numpy.array(test_temp_x, dtype=T.config.floatX),numpy.array(test_temp_y, ndmin=len(ly),dtype='int64'))
-
-
-     #Load the dataset 
-    '''
-    f = gzip.open(dataset,'rb')
-    train_set, valid_set, test_set = cPickle.load(f)
-    f.close()
-    '''
-
-    #print 'Train_set :',type(train_set[0])
-    #print train_set[0]
-    #raw_input("Enter input")
-
-    def shared_dataset(data_xy, local_xy, log):
+    def shared_dataset(data_xy, local_xy):
         """ Function that loads the dataset into shared variables
         
         The reason we store our dataset in shared variables is to allow 
@@ -243,24 +202,10 @@ def load_data(dataset):
         variable) would lead to a large decrease in performance.
         """
         data_x, data_y = data_xy
-#        local_x, local_y = local_xy
-#        data_x = data_x[:len(local_y)]
-#        data_y = data_y[:len(local_y)]
-
-        #print log
-#        for i in range(0, len(local_x)):
-#            #print i, data_x[i].shape, local_x[i].shape
-#            for j in range(0, 128*128):
-#                data_x[i][j] = local_x[i][j]
-#
-#        for i in range(0, len(local_y)):
-#            #print i, local_y[i]
-#            data_y[i] = local_y[i]
 
         
         shared_x = theano.shared(numpy.asarray(data_x, dtype=theano.config.floatX))
         shared_y = theano.shared(numpy.asarray(data_y))
-        #print 'shared_y :', type(shared_y)               
         # When storing data on the GPU it has to be stored as floats
         # therefore we will store the labels as ``floatX`` as well
         # (``shared_y`` does exactly that). But during our computations
@@ -271,21 +216,10 @@ def load_data(dataset):
         
         return shared_x, T.cast(shared_y, 'int32')
 
-    # expects numpy.ndarray and not tensor.sharedvariable
-#    train_set = (numpy.array(train_temp_x, ndmin=len(ly), dtype='float32'), numpy.array(train_temp_y), ndmin=len(ly), dtype='int64')
-#    lx, ly = local_data[1]
-#    valid_set = (numpy.array(valid_temp_x, ndmin=len(ly), dtype='float32'), numpy.array(valid_temp_y), ndmin=len(ly), dtype='int64')
-#    lx, ly = local_data[2]
-#    test_set = (numpy.array(test_temp_x, ndmin=len(ly), dtype='float32'), numpy.array(test_temp_y), ndmin=len(ly), dtype='int64')
+    test_set_x,  test_set_y  = shared_dataset(test_set, local_data[0])
+    valid_set_x, valid_set_y = shared_dataset(valid_set, local_data[1])
+    train_set_x, train_set_y = shared_dataset(train_set, local_data[2])
 
-
-    test_set_x,  test_set_y  = shared_dataset(test_set, local_data[0], 'test')
-    valid_set_x, valid_set_y = shared_dataset(valid_set, local_data[1], 'valid')
-    train_set_x, train_set_y = shared_dataset(train_set, local_data[2], 'train')
-
-#    print 'train_set_y  = %s, %s, %s, %s' %(type(train_set[0][0][0]), type(train_set[0][0]), train_set_x.name, type(train_set))
-#    print train_set_x.get_value().shape
-#    raw_input("Enter Something...")
     rval = [(train_set_x, train_set_y), (valid_set_x,valid_set_y), (test_set_x, test_set_y)]
     return rval
 
