@@ -22,6 +22,7 @@ def convert_image_to_seq(im):
     return seq
 
 def load_data_hollywood():
+    print "... loading data from ORL Dataset"
     test_set = []
     train_set = []
     valid_set = []
@@ -54,6 +55,7 @@ def load_data_hollywood():
                 break
 
     for data_set in data_sets:
+        random.shuffle(data_set)
         random.shuffle(data_set)
         
     def extract_data_tuples(data_set):

@@ -54,6 +54,7 @@ def convert_image_to_seq(im):
     return seq
 
 def load_data_hollywood():
+    print "... loading data from custom dataset"
     test_set_x = []
     test_set_y = []
     train_set_x = []

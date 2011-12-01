@@ -40,8 +40,8 @@ import numpy.lib.shape_base as shape_base
 import theano
 import theano.tensor as T
 
-import convert_pics as data_store
-#import data_store
+#import convert_pics as data_store
+import data_store
 
 class LogisticRegression(object):
     """Multi-class Logistic Regression Class
@@ -138,7 +138,9 @@ class LogisticRegression(object):
         if y.dtype.startswith('int'):
             # the T.neq operator returns a vector of 0s and 1s, where 1
             # represents a mistake in prediction
-            return T.mean(T.neq(self.y_pred, y))
+            y_pred_print = theano.printing.Print('Prediction: ')(self.y_pred)
+            y_print = theano.printing.Print('Given label: ')(y)
+            return T.mean(T.neq(y_pred_print, y_print))
         else:
             raise NotImplementedError()
 
