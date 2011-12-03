@@ -41,7 +41,8 @@ import theano
 import theano.tensor as T
 
 #import convert_pics as data_store
-import data_store
+#import data_store
+import dotnodot_data_store as data_store
 
 class LogisticRegression(object):
     """Multi-class Logistic Regression Class
